@@ -145,6 +145,47 @@ func TestFinalScoreMultipleRoads(t *testing.T) {
 	}
 }
 
+func TestFinalScoreMultipleRoads123(t *testing.T) {
+	// ------ create tileset --------
+	var tiles []tiles.Tile
+	var err error
+	tiles = append(tiles, tiletemplates.TCrossRoad())
+	tiles = append(tiles, tiletemplates.RoadsTurn())
+	tiles = append(tiles, tiletemplates.RoadsTurn())
+	tiles = append(tiles, tiletemplates.RoadsTurn())
+
+	tileset := tilesets.TileSet{
+		StartingTile: tiletemplates.SingleCityEdgeStraightRoads(),
+		Tiles:        tiles,
+	}
+
+	// ------ create game --------
+	deckStack := stack.NewOrdered(tileset.Tiles)
+	deck := deck.Deck{Stack: &deckStack, StartingTile: tileset.StartingTile}
+
+	game, err := NewFromDeck(deck, nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	makeTurn(game, t, position.New(0, -1), 0, elements.NormalMeeple, side.Right, feature.Road)
+	makeTurn(game, t, position.New(1, -1), 0, elements.NoneMeeple, side.NoSide, feature.NoneType)
+	makeTurn(game, t, position.New(1, -2), 1, elements.NoneMeeple, side.NoSide, feature.NoneType)
+	makeTurn(game, t, position.New(0, -2), 2, elements.NoneMeeple, side.NoSide, feature.NoneType)
+
+	scores, err := game.Finalize()
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	var expectedScores = []uint32{4, 0}
+
+	for i := range 2 {
+		if scores.ReceivedPoints[elements.ID(i+1)] != expectedScores[i] {
+			t.Fatalf("Player %d final score incorrect. Expected %d, got: %d", i+1, expectedScores[i], scores.ReceivedPoints[elements.ID(i+1)])
+		}
+	}
+}
+
 /*
 |                 0    1
 
