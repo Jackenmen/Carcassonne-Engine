@@ -59,6 +59,22 @@ func TestBoardTileHasValidPlacementReturnsTrueWhenValidPlacementExists(t *testin
 	}
 }
 
+func TestBoardTileIsPositionValidReturnsTrueWhenJoiningMonasteryWithExistingRoad(t *testing.T) {
+	board := NewBoard(tilesets.StandardTileSet()).(*board)
+
+	// tile with road on its left side, monastery at the center, and fields everywhere
+	tile := tiletemplates.MonasteryWithSingleRoad().Rotate(1)
+	tilePlacement := elements.ToPlacedTile(tile)
+	tilePlacement.Position = position.New(1, 0)
+
+	expected := true
+	actual := board.isPositionValid(tilePlacement)
+
+	if expected != actual {
+		t.Fatalf("expected %#v, got %#v instead", expected, actual)
+	}
+}
+
 func TestBoardCanBePlacedReturnsTrueWhenPlacedTileCanBePlaced(t *testing.T) {
 	board := NewBoard(tilesets.StandardTileSet())
 
