@@ -201,3 +201,41 @@ func TestScoreFieldTwoPlayersGetPoints(t *testing.T) {
 		t.Fatalf("expected %#v, got %#v instead", expectedReport, actualReport)
 	}
 }
+
+func TestRegressionGHIssue71(t *testing.T) {
+	boardInterface := NewBoard(tilesets.StandardTileSet())
+	board := boardInterface.(*board)
+
+	tiles := []elements.PlacedTile{
+		elements.ToPlacedTile(tiletemplates.TCrossRoad()),
+		elements.ToPlacedTile(tiletemplates.TwoCityEdgesCornerConnected()),
+		elements.ToPlacedTile(tiletemplates.TwoCityEdgesCornerConnected().Rotate(1)),
+		elements.ToPlacedTile(tiletemplates.ThreeCityEdgesConnected()),
+		elements.ToPlacedTile(tiletemplates.FourCityEdgesConnectedShield()),
+		elements.ToPlacedTile(tiletemplates.ThreeCityEdgesConnected()),
+	}
+
+	tiles[0].Position = position.New(1, 0)
+	tiles[1].Position = position.New(1, 1)
+	tiles[2].Position = position.New(1, 2)
+	tiles[3].Position = position.New(2, 1)
+	tiles[4].Position = position.New(2, 2)
+	tiles[5].Position = position.New(1, 3)
+
+	// place tiles
+	for i, tile := range tiles {
+		_, err := board.PlaceTile(tile)
+		if err != nil {
+			t.Fatalf("error placing tile number: %#v: %#v", i, err)
+		}
+	}
+
+	field := field.New(
+		*tiles[5].GetPlacedFeatureAtSide(
+			side.BottomLeftEdge|side.BottomRightEdge,
+			feature.Field,
+		),
+		tiles[5].Position,
+	)
+	field.Expand(board, board.cityManager)
+}
