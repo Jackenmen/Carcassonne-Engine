@@ -67,3 +67,5 @@ python_bindings/carcassonne_engine/_bindings/*
 logs/
 
 built_wheels/
+
+cmd/fuzz/fuzz

@@ -175,6 +175,16 @@ func (engine *GameEngine) GenerateOrderedGame(tileSet tilesets.TileSet) (Seriali
 	return engine.generateGameFromDeck(deck)
 }
 
+func (engine *GameEngine) GenerateGameSeeded(tileSet tilesets.TileSet, seed int64) (SerializedGameWithID, error) {
+	deckStack := stack.NewSeeded(tileSet.Tiles, seed)
+	deck := deck.Deck{
+		Stack:        &deckStack,
+		StartingTile: tileSet.StartingTile,
+	}
+
+	return engine.generateGameFromDeck(deck)
+}
+
 func (engine *GameEngine) generateGameFromDeck(deck deck.Deck) (SerializedGameWithID, error) {
 	id := engine.nextGameID
 	engine.nextGameID++
