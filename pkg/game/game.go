@@ -163,6 +163,10 @@ func (game *Game) ensureCurrentTileHasValidPlacement() error {
 	return nil
 }
 
+func (game *Game) SwapCurrentTile(tile tiles.Tile) error {
+	return game.deck.MoveToTop(tile)
+}
+
 func (game *Game) PlayTurn(move elements.PlacedTile) error {
 	// This is guaranteed to return a tile that has at least one valid placement
 	// or `OutOfBounds` error, if there's no tiles left in the deck and this turn

@@ -128,8 +128,10 @@ func (state *GameState) resolve(baseGame *game.Game) (*game.Game, error) {
 	}
 	game := baseGame.DeepClone()
 	for _, move := range state.simulatedMoves {
-		err := game.PlayTurn(move)
-		if err != nil {
+		if err := game.SwapCurrentTile(elements.ToTile(move)); err != nil {
+			return nil, err
+		}
+		if err := game.PlayTurn(move); err != nil {
 			return nil, err
 		}
 	}
@@ -265,6 +267,10 @@ func (req *GetLegalMovesRequest) execute(baseGame *game.Game) Response {
 	for _, placement := range placements {
 		for _, move := range baseGame.GetLegalMovesFor(placement) {
 			game := baseGame.DeepClone()
+			if err := game.SwapCurrentTile(elements.ToTile(move)); err != nil {
+				resp.err = err
+				return resp
+			}
 			if err := game.PlayTurn(move); err != nil {
 				resp.err = err
 				return resp
