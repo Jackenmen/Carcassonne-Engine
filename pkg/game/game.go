@@ -13,6 +13,10 @@ import (
 	"github.com/YetAnotherSpieskowcy/Carcassonne-Engine/pkg/tilesets"
 )
 
+var ErrCannotSwapTiles = errors.New(
+	"swapping tiles is only allowed in game clones created with DeepCloneWithSwappableTiles()",
+)
+
 type SerializedGame struct {
 	CurrentTile         tiles.Tile
 	ValidTilePlacements []elements.PlacedTile
@@ -30,6 +34,7 @@ type Game struct {
 	// index in the `players` field, not the Player ID
 	currentPlayer int
 	log           logger.Logger
+	canSwapTiles  bool
 }
 
 func NewFromTileSet(tileSet tilesets.TileSet, log logger.Logger) (*Game, error) {
@@ -85,6 +90,12 @@ func (game Game) DeepClone() *Game {
 	game.log = &nullLogger
 
 	return &game
+}
+
+func (game *Game) DeepCloneWithSwappableTiles() *Game {
+	clone := game.DeepClone()
+	clone.canSwapTiles = true
+	return clone
 }
 
 func (game *Game) DeepCloneWithLog(log logger.Logger) (*Game, error) {
@@ -164,6 +175,9 @@ func (game *Game) ensureCurrentTileHasValidPlacement() error {
 }
 
 func (game *Game) SwapCurrentTile(tile tiles.Tile) error {
+	if !game.canSwapTiles {
+		return ErrCannotSwapTiles
+	}
 	return game.deck.MoveToTop(tile)
 }
 
