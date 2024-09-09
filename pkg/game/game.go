@@ -116,11 +116,20 @@ func (game *Game) Serialized() SerializedGame {
 		TileSet:         game.deck.TileSet(),
 	}
 
+	// prevent leakage of future state of the CurrentTile
+	if game.canSwapTiles {
+		return serialized
+	}
+
 	if tile, err := game.GetCurrentTile(); err == nil {
 		serialized.CurrentTile = tile
 		serialized.ValidTilePlacements = game.board.GetTilePlacementsFor(tile)
 	}
 	return serialized
+}
+
+func (game *Game) CanSwapTiles() bool {
+	return game.canSwapTiles
 }
 
 func (game *Game) GetCurrentTile() (tiles.Tile, error) {

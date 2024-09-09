@@ -40,7 +40,7 @@ func (req *cloneGameRequest) execute(g *game.Game) Response {
 
 	if req.LogDir == "" {
 		for i := range req.ReservedIDs {
-			clones[i] = g.DeepClone()
+			clones[i] = g.DeepCloneWithSwappableTiles()
 		}
 		resp.Clones = clones
 		return resp
@@ -94,7 +94,13 @@ func (req *PlayTurnRequest) requiresWrite() bool {
 }
 
 func (req *PlayTurnRequest) execute(game *game.Game) Response {
-	err := game.PlayTurn(req.Move)
+	var err error
+	if game.CanSwapTiles() {
+		err = game.SwapCurrentTile(elements.ToTile(req.Move))
+	}
+	if err != nil {
+		err = game.PlayTurn(req.Move)
+	}
 	resp := &PlayTurnResponse{
 		BaseResponse: BaseResponse{
 			gameID: req.gameID(),
