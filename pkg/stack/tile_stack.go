@@ -99,6 +99,10 @@ func (s Stack[T]) Peek() (T, error) {
 }
 
 func (s *Stack[T]) MoveToTop(tile T) error {
+	if s.turnNo >= int32(len(s.tiles)) {
+		return ErrStackOutOfBounds
+	}
+
 	// TODO: this is O(n) but could be optimized to O(1) with an additional map
 	// keyed by the tile
 	order := s.order[s.turnNo:]
