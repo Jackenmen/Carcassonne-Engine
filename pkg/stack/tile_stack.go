@@ -3,27 +3,35 @@ package stack
 import (
 	"errors"
 	"math/rand" //nolint:gosec// Weak number generator is sufficent in our case
+	"slices"
 	"time"
 )
 
-type Stack[T interface{}] struct {
+type Comparable[T any] interface {
+	Equals(T) bool
+}
+
+type Stack[T Comparable[T]] struct {
 	seed   int64
 	turnNo int32
 	tiles  []T
 	order  []int32
 }
 
-var ErrStackOutOfBounds = errors.New("stack: out of bounds")
+var (
+	ErrStackOutOfBounds = errors.New("stack: out of bounds")
+	ErrTileNotFound     = errors.New("could not find the given tile")
+)
 
 // New creates new Stack and shuffles it using current time as seed.
 // NODE: Input slice is not copied.
-func New[T interface{}](tiles []T) Stack[T] {
+func New[T Comparable[T]](tiles []T) Stack[T] {
 	return NewSeeded(tiles, time.Now().UnixNano())
 }
 
 // NewSeeded creates new Stack and shuffles it using the provided seed.
 // NODE: Input slice is not copied.
-func NewSeeded[T interface{}](tiles []T, seed int64) Stack[T] {
+func NewSeeded[T Comparable[T]](tiles []T, seed int64) Stack[T] {
 	stack := NewOrdered(tiles)
 	stack.seed = seed
 	rng := rand.New(rand.NewSource(stack.seed)) //nolint:gosec// Weak number generator is sufficent in our case
@@ -35,7 +43,7 @@ func NewSeeded[T interface{}](tiles []T, seed int64) Stack[T] {
 
 // NewOrdered creates new Stack and maintains original order.
 // NODE: Input slice is not copied.
-func NewOrdered[T interface{}](tiles []T) Stack[T] {
+func NewOrdered[T Comparable[T]](tiles []T) Stack[T] {
 	stack := Stack[T]{
 		seed:   0,
 		turnNo: 0,
@@ -49,8 +57,7 @@ func NewOrdered[T interface{}](tiles []T) Stack[T] {
 }
 
 func (s Stack[T]) DeepClone() Stack[T] {
-	// the only state in Stack is turnNo which is already copied
-	// due to usage of a value receiver
+	s.order = slices.Clone(s.order)
 	return s
 }
 
@@ -89,4 +96,17 @@ func (s *Stack[T]) Next() (T, error) {
 
 func (s Stack[T]) Peek() (T, error) {
 	return s.Get(s.turnNo)
+}
+
+func (s *Stack[T]) MoveToTop(tile T) error {
+	// TODO: this is O(n) but could be optimized to O(1) with an additional map
+	// keyed by the tile
+	order := s.order[s.turnNo:]
+	for turnIndex, tileIndex := range order {
+		if s.tiles[tileIndex].Equals(tile) {
+			order[turnIndex], order[0] = order[0], order[turnIndex]
+			return nil
+		}
+	}
+	return ErrTileNotFound
 }

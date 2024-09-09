@@ -10,6 +10,10 @@ type Tile struct {
 	id int
 }
 
+func (t Tile) Equals(other Tile) bool {
+	return t.id == other.id
+}
+
 func TestDeepClone(t *testing.T) {
 	tiles := []Tile{{0}, {1}, {2}, {3}}
 
@@ -171,5 +175,42 @@ func TestRemainingTileCount(t *testing.T) {
 	}
 	if stack.GetRemainingTileCount() != tileCount-2 {
 		t.Fail()
+	}
+}
+
+func TestMoveToTopReturnsErrorWhenNoMatchingTileLeft(t *testing.T) {
+	tiles := []Tile{{0}, {1}, {2}, {3}}
+	stack := NewOrdered(tiles)
+	if _, err := stack.Next(); err != nil {
+		t.Fatal(err)
+	}
+
+	err := stack.MoveToTop(Tile{0})
+	if err == nil || !errors.Is(err, ErrTileNotFound) {
+		t.Fatal(err)
+	}
+
+	expectedRemaining := []Tile{{1}, {2}, {3}}
+	remaining := stack.GetRemaining()
+	if !slices.Equal(remaining, expectedRemaining) {
+		t.Fatalf("expected %#v, got %#v instead", expectedRemaining, remaining)
+	}
+}
+
+func TestMoveToTopUpdatesOrderProperly(t *testing.T) {
+	tiles := []Tile{{0}, {1}, {2}, {3}}
+	stack := NewOrdered(tiles)
+	if _, err := stack.Next(); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := stack.MoveToTop(Tile{2}); err != nil {
+		t.Fatal(err)
+	}
+
+	expectedRemaining := []Tile{{2}, {1}, {3}}
+	remaining := stack.GetRemaining()
+	if !slices.Equal(remaining, expectedRemaining) {
+		t.Fatalf("expected %#v, got %#v instead", expectedRemaining, remaining)
 	}
 }
