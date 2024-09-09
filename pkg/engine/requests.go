@@ -150,6 +150,11 @@ func (state *GameState) with(
 		simulatedMoves = append(simulatedMoves, state.simulatedMoves...)
 		simulatedMoves = append(simulatedMoves, move)
 	}
+
+	// prevent leakage of future state of the CurrentTile
+	serializedGame.CurrentTile = tiles.Tile{}
+	serializedGame.ValidTilePlacements = nil
+
 	return &GameState{
 		serializedGame: serializedGame,
 		simulatedMoves: simulatedMoves,
