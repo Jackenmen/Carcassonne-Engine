@@ -34,6 +34,10 @@ func NewScoreReport() ScoreReport {
 	}
 }
 
+func (report *ScoreReport) IsEmpty() bool {
+	return len(report.ReceivedPoints) == 0 && len(report.ReturnedMeeples) == 0
+}
+
 // Adds the contents of otherReport to the contents of this score report
 func (report *ScoreReport) Join(otherReport ScoreReport) {
 	for playerID, score := range otherReport.ReceivedPoints {

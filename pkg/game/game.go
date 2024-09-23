@@ -262,6 +262,14 @@ func (game *Game) PlayTurn(move elements.PlacedTile) error {
 		}
 	}
 
+	if !scoreReport.IsEmpty() {
+		if err := game.log.LogEvent(
+			logger.ScoreEvent, logger.NewScoreEntryContent(scoreReport),
+		); err != nil {
+			return err
+		}
+	}
+
 	// Pop from the stack after the move.
 	if _, err = game.deck.Next(); err != nil {
 		return err
