@@ -29,4 +29,4 @@ jobs:
       - name: Run tests
         run: |
           go test -v ./pkg/game/performancetests -bench=. -run=xxx -benchmem
-          go test -v ./pkg/engine/request_performance_tests -bench=. -run=xxx -benchmem -benchtime=1x -memprofile
+          go test -v ./pkg/engine/request_performance_tests -bench=. -run=xxx -benchmem -benchtime=1x
