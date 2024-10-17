@@ -72,4 +72,5 @@ func PlayGame(gameCount int, testedRequest TestedRequest, b *testing.B) {
 			games[i].Game = playTurnResp[i].Game
 		}
 	}
+	eng.Close()
 }
